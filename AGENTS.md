@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- All menu content (items, prices, category photos) lives in src/data/menu.ts; components only render it — keeps future price edits in one place.
