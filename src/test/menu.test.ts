@@ -10,7 +10,7 @@ describe("cardápio Bonutt", () => {
   });
   it("Lagunitas IPA chopp 500 ml custa R$ 24,00", () => {
     const chopp = menu.find((c) => c.id === "chopp")!;
-    const item = chopp.groups[1].items.find((i) => i.name === "Lagunitas IPA");
+    const item = chopp.groups[1]!.items.find((i) => i.name === "Lagunitas IPA");
     expect(item?.prices?.[1]).toEqual({ label: "500 ml", price: "R$ 24,00" });
   });
   it("long necks ficam com preço pendente", () => {
