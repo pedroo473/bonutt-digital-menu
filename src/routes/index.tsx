@@ -210,7 +210,7 @@ function Index() {
       {/* Nosso cardápio */}
       <a
         href="#cardapio"
-        className="group flex h-full min-h-[190px] flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
+        className="group flex h-full min-h-47.5 flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
       >
         <Utensils className="mb-5 h-7 w-7 text-gold transition-transform group-hover:scale-110" />
 
@@ -230,7 +230,7 @@ function Index() {
       {/* Eventos */}
       <a
         href="#eventos"
-        className="group flex h-full min-h-[190px] flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
+        className="group flex h-full min-h-47.5 flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
       >
         <CalendarDays className="mb-5 h-7 w-7 text-gold transition-transform group-hover:scale-110" />
 
@@ -252,7 +252,7 @@ function Index() {
         href="https://www.google.com/maps/search/?api=1&query=Rua+Humberto+de+Moro+500+Inconfidentes+Contagem+MG"
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex h-full min-h-[190px] flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
+        className="group flex h-full min-h-47.5 flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
       >
         <MapPin className="mb-5 h-7 w-7 text-gold transition-transform group-hover:scale-110" />
 
@@ -275,7 +275,7 @@ function Index() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Fale com o Bonutt pelo WhatsApp"
-        className="group flex h-full min-h-[190px] flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
+        className="group flex h-full min-h-47.5 flex-col rounded-xl border border-gold/20 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:bg-secondary"
       >
         <MessageCircle className="mb-5 h-7 w-7 text-gold transition-transform group-hover:scale-110" />
 

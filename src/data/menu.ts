@@ -441,7 +441,11 @@ export const contact = {
 };
 
 export const normalize = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
 /** Filtra o cardápio pelo nome do produto (ignora acentos e maiúsculas). */
 export function searchMenu(query: string): MenuCategory[] {

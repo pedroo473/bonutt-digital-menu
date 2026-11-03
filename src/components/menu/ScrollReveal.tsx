@@ -1,64 +1,63 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-type ScrollRevealProps = {
+interface ScrollRevealProps {
   children: ReactNode;
+  className?: string;
   delayMs?: number;
-};
+}
 
-/**
- * Reveals content when it enters the viewport.
- * Respects reduced-motion preferences and falls back safely when
- * IntersectionObserver is unavailable.
- */
 export function ScrollReveal({
   children,
+  className = "",
   delayMs = 0,
 }: ScrollRevealProps) {
-  const elementRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const element = elementRef.current;
+    const element = ref.current;
+    if (!element) return;
 
-    if (!element) {
-      return;
-    }
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      setIsVisible(true);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(true);
+      setReady(true);
       return;
     }
 
     const observer = new IntersectionObserver(
-      (entries, currentObserver) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setIsVisible(true);
-          currentObserver.unobserve(element);
-        }
-      },
+  (entries) => {
+    const entry = entries[0];
+
+    if (!entry) return;
+
+    if (entry.isIntersecting) {
+      setVisible(true);
+      observer.unobserve(entry.target);
+    }
+  },
       {
         threshold: 0.12,
-        rootMargin: "0px 0px -40px 0px",
+        rootMargin: "0px 0px -35px 0px",
       },
     );
 
     observer.observe(element);
+    setReady(true);
 
     return () => observer.disconnect();
   }, []);
 
   return (
     <div
-      ref={elementRef}
-      style={{ transitionDelay: `${delayMs}ms` }}
+      ref={ref}
       className={[
-        "transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none",
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0",
+        "scroll-reveal",
+        ready ? "scroll-reveal--ready" : "",
+        visible ? "scroll-reveal--visible" : "",
+        className,
       ].join(" ")}
+      style={{ transitionDelay: `${delayMs}ms` }}
     >
       {children}
     </div>
