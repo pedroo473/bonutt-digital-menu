@@ -95,7 +95,9 @@ function parseBrazilianPrice(value: string): number | null {
 
 function toPriceInput(value: number | string | null): string {
   if (value === null || value === undefined || value === "") return "";
-  return Number(value).toLocaleString("pt-BR", {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) return "";
+  return numeric.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -108,7 +110,7 @@ function toPriceInput(value: number | string | null): string {
  * para respeitar numeric(10, 2) no banco.
  */
 function formatPriceInput(raw: string): string {
-  const digits = raw.replace(/\\D/g, "").slice(0, 10);
+  const digits = raw.replace(/\D/g, "").slice(0, 10);
   if (!digits) return "";
   const value = Number(digits) / 100;
   return value.toLocaleString("pt-BR", {
