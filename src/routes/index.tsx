@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUp, Instagram, Music, PartyPopper, Search, Trees, CalendarDays, X } from "lucide-react";
+import { ArrowUp, Instagram, Music, PartyPopper, Search, Trees, CalendarDays, ShoppingBag, X } from "lucide-react";
 import logo from "@/assets/bonutt-logo.png.asset.json";
 import hero from "@/assets/menu/hero.jpg";
 import eventos from "@/assets/menu/eventos.jpg";
@@ -74,6 +74,17 @@ function Index() {
               </button>
             )}
           </label>
+          <a
+            href="https://bonuttcarnes.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Acessar o delivery da Bonutt (abre em nova aba)"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-3 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring sm:px-4 sm:text-sm"
+          >
+            <ShoppingBag className="h-4 w-4" aria-hidden="true" />
+            <span className="sm:hidden">Delivery</span>
+            <span className="hidden sm:inline">Peça pelo Delivery</span>
+          </a>
         </div>
         <nav aria-label="Categorias" className="mx-auto max-w-6xl">
           <ul className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2">
