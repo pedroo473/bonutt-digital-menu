@@ -448,10 +448,10 @@ export const normalize = (s: string) =>
     .trim();
 
 /** Filtra o cardápio pelo nome do produto (ignora acentos e maiúsculas). */
-export function searchMenu(query: string): MenuCategory[] {
+export function searchMenu(query: string, source: MenuCategory[] = menu): MenuCategory[] {
   const q = normalize(query);
-  if (!q) return menu;
-  return menu
+  if (!q) return source;
+  return source
     .map((c) => ({
       ...c,
       groups: c.groups
