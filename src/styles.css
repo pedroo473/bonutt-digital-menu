@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
-@source "../src";
 @import "tw-animate-css";
+
+@source "../src";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -68,19 +69,11 @@
   * {
     border-color: var(--color-border);
   }
-  html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 8.5rem;
-  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
   }
 }
 
@@ -104,5 +97,55 @@
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+/* Rolagem suave e posicionamento das seções */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 9rem;
+}
+
+/* Entrada suave dos elementos durante a rolagem */
+.scroll-reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 550ms ease,
+    transform 550ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.scroll-reveal--ready:not(.scroll-reveal--visible) {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.scroll-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respeita usuários que preferem movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Respeita usuários que preferem movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  html {
+    scroll-behavior: auto;
   }
 }

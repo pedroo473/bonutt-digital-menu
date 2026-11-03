@@ -16,9 +16,7 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
           </span>
         )}
       </div>
-      {item.description && (
-        <p className="text-sm text-muted-foreground">{item.description}</p>
-      )}
+      {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
       {item.prices && (
         <dl className="mt-1 flex flex-wrap gap-2">
           {item.prices.map((p) => (
