@@ -101,6 +101,22 @@ function toPriceInput(value: number | string | null): string {
   });
 }
 
+/**
+ * Formata o valor enquanto a pessoa digita somente os números.
+ * Exemplo: 1 -> 0,01 | 1290 -> 12,90.
+ * Também limita a entrada a 8 dígitos inteiros + 2 casas decimais
+ * para respeitar numeric(10, 2) no banco.
+ */
+function formatPriceInput(raw: string): string {
+  const digits = raw.replace(/\\D/g, "").slice(0, 10);
+  if (!digits) return "";
+  const value = Number(digits) / 100;
+  return value.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function toCurrency(value: number | string | null): string {
   if (value === null || value === undefined || value === "") return "Sem preço";
   return new Intl.NumberFormat("pt-BR", {
@@ -801,7 +817,8 @@ function AdminPage() {
                   </label>
                   <label className="space-y-1.5 text-sm">
                     <span className="font-semibold">Preço (R$)</span>
-                    <input value={draft.price} onChange={(event) => updateDraft("price", event.target.value)} inputMode="decimal" placeholder="Ex.: 29,90" className="h-11 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring" />
+                    <input value={draft.price} onChange={(event) => updateDraft("price", formatPriceInput(event.target.value))} inputMode="numeric" placeholder="Digite só os números (1290 = 12,90)" aria-describedby="price-format-help" className="h-11 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring" />
+                    <span id="price-format-help" className="text-xs text-muted-foreground">Digite apenas os números. Exemplo: 1290 será exibido como R$ 12,90.</span>
                   </label>
                   <label className="space-y-1.5 text-sm">
                     <span className="font-semibold">Grupo (opcional)</span>
@@ -830,7 +847,7 @@ function AdminPage() {
                   {draft.price_options.map((option, index) => (
                     <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2">
                       <input value={option.label} onChange={(event) => updateDraft("price_options", draft.price_options.map((current, i) => i === index ? { ...current, label: event.target.value } : current))} placeholder="Tamanho (ex.: 300 ml)" className="h-10 min-w-0 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-                      <input value={option.price} onChange={(event) => updateDraft("price_options", draft.price_options.map((current, i) => i === index ? { ...current, price: event.target.value } : current))} inputMode="decimal" placeholder="Preço (ex.: 12,00)" className="h-10 min-w-0 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                      <input value={option.price} onChange={(event) => updateDraft("price_options", draft.price_options.map((current, i) => i === index ? { ...current, price: formatPriceInput(event.target.value) } : current))} inputMode="numeric" placeholder="Só números (1200 = 12,00)" aria-label={"Preço da variação " + (index + 1)} className="h-10 min-w-0 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
                       <button type="button" aria-label="Remover variação" onClick={() => updateDraft("price_options", draft.price_options.filter((_current, i) => i !== index))} className="rounded-lg border border-border px-3 text-muted-foreground hover:border-destructive hover:text-destructive">
                         <X className="h-4 w-4" />
                       </button>
