@@ -89,7 +89,16 @@ function mapProductsToGroups(rows: ProductRow[]): MenuGroup[] {
     group.items.push(item);
   }
 
-  return Array.from(groups.values());
+  return Array.from(groups.values()).map((group) => {
+    const firstPricedItem = group.items.find((item) => item.price);
+    if (group.note && firstPricedItem?.price && /R\$\s*[\d.,]+/.test(group.note)) {
+      return {
+        ...group,
+        note: group.note.replace(/R\$\s*[\d.,]+/, firstPricedItem.price),
+      };
+    }
+    return group;
+  });
 }
 
 /**
@@ -139,14 +148,14 @@ export async function loadPublishedMenu(): Promise<MenuCategory[] | null> {
       const storedProducts = productsByCategory.get(original.id) ?? [];
       if (storedProducts.length === 0) return [];
 
-      return [
-        {
-          ...original,
-          title: storedCategory.title,
-          ...(storedCategory.note ? { note: storedCategory.note } : { note: undefined }),
-          groups: mapProductsToGroups(storedProducts),
-        },
-      ];
+      const updatedCategory: MenuCategory = {
+        ...original,
+        title: storedCategory.title,
+        groups: mapProductsToGroups(storedProducts),
+      };
+      if (storedCategory.note) updatedCategory.note = storedCategory.note;
+      else delete updatedCategory.note;
+      return [updatedCategory];
     });
   } catch (error) {
     console.error("Não foi possível carregar o cardápio atualizado do Supabase:", error);
