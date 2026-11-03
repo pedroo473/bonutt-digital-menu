@@ -125,6 +125,9 @@ function AdminPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [tab, setTab] = useState<"products" | "categories">("products");
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -160,8 +163,11 @@ function AdminPage() {
       }
     });
 
-    const { data } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    const { data } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession);
+      if (event === "PASSWORD_RECOVERY") {
+        setPasswordRecovery(true);
+      }
       setAuthLoading(false);
     });
 
@@ -259,6 +265,36 @@ function AdminPage() {
     setLoginLoading(false);
 
     if (error) notify("Não foi possível entrar. Confira o e-mail e a senha.", true);
+  };
+
+  const handlePasswordUpdate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase) return;
+
+    if (newPassword.length < 8) {
+      notify("A nova senha precisa ter pelo menos 8 caracteres.", true);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      notify("As senhas não conferem. Digite novamente.", true);
+      return;
+    }
+
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSaving(false);
+
+    if (error) {
+      notify("Não foi possível atualizar a senha: " + error.message, true);
+      return;
+    }
+
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordRecovery(false);
+    await supabase.auth.signOut();
+    notify("Senha atualizada. Entre com sua nova senha.");
   };
 
   const handleLogout = async () => {
@@ -511,6 +547,59 @@ function AdminPage() {
 
   if (typeof window === "undefined" || !supabase || authLoading) {
     return <LoadingScreen />;
+  }
+
+  if (passwordRecovery) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+        <div className="w-full max-w-md rounded-2xl border border-gold/25 bg-card p-7 shadow-xl">
+          <div className="mb-6 text-center">
+            <img src="/logo-bonutt.png" alt="Bonutt" className="mx-auto mb-5 h-20 w-auto object-contain" />
+            <h1 className="font-display text-2xl font-bold text-gold-gradient">Criar nova senha</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Escolha uma nova senha para acessar a administração do cardápio.
+            </p>
+          </div>
+          <form onSubmit={handlePasswordUpdate} className="space-y-4">
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">Nova senha</span>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+                required
+                className="h-11 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Mínimo de 8 caracteres"
+              />
+            </label>
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">Confirmar nova senha</span>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+                required
+                className="h-11 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Digite a senha novamente"
+              />
+            </label>
+            {message && <Notice text={message} isError={messageIsError} />}
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 font-semibold text-primary-foreground transition hover:brightness-110 disabled:opacity-60"
+            >
+              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Salvar nova senha
+            </button>
+          </form>
+        </div>
+      </main>
+    );
   }
 
   if (!session) {
