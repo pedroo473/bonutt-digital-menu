@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { Session } from "@supabase/supabase-js";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -182,7 +182,8 @@ function AdminPage() {
     void supabase.rpc("is_menu_admin").then(({ data, error }) => {
       if (!mounted) return;
       if (error) {
-        notify("Não foi possível validar a permissão administrativa. Confira o SQL de configuração.", true);
+        setMessage("Não foi possível validar a permissão administrativa. Confira o SQL de configuração.");
+        setMessageIsError(true);
         setIsAdmin(false);
         return;
       }
@@ -216,10 +217,8 @@ function AdminPage() {
       if (!mounted) return;
 
       if (categoryResult.error || productResult.error) {
-        notify(
-          "Erro ao carregar o painel. Verifique se o script SQL foi executado no Supabase.",
-          true,
-        );
+        setMessage("Erro ao carregar o painel. Verifique se o script SQL foi executado no Supabase.");
+        setMessageIsError(true);
       } else {
         setCategories((categoryResult.data ?? []) as CategoryRow[]);
         setProducts((productResult.data ?? []) as ProductRow[]);
@@ -677,7 +676,8 @@ function AdminPage() {
               </select>
               <button
                 onClick={startNewProduct}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-110"
+                disabled={categories.length === 0}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50"
               >
                 <Plus className="h-4 w-4" /> Novo produto
               </button>
@@ -885,7 +885,7 @@ function Notice({ text, isError }: { text: string; isError: boolean }) {
   );
 }
 
-function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
+function StatCard({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-gold/20 bg-card p-4">
       <div>
