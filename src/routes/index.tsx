@@ -21,6 +21,7 @@ import hero from "@/assets/menu/hero.jpg";
 import eventos from "@/assets/menu/eventos.jpg";
 import { contact, menu, searchMenu } from "@/data/menu";
 import { CategorySection } from "@/components/menu/CategorySection";
+import { loadPublishedMenu } from "@/lib/catalog";
 
 const TITLE = "Cardápio Bonutt — Carnes & Conveniência";
 const DESC =
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [query, setQuery] = useState("");
+  const [catalog, setCatalog] = useState(menu);
   const [showTop, setShowTop] = useState(false);
   const categoryScrollRef = useRef<HTMLUListElement>(null);
 
@@ -52,7 +54,7 @@ function Index() {
       behavior: "smooth",
     });
   };
-  const results = useMemo(() => searchMenu(query), [query]);
+  const results = useMemo(() => searchMenu(query, catalog), [query, catalog]);
   const searching = query.trim().length > 0;
 
   useEffect(() => {
@@ -60,6 +62,16 @@ function Index() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadPublishedMenu().then((publishedMenu) => {
+      if (!cancelled && publishedMenu) setCatalog(publishedMenu);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -139,7 +151,7 @@ function Index() {
               ref={categoryScrollRef}
               className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain scroll-smooth px-2 pb-2 pt-1 touch-pan-x"
             >
-              {(searching ? results : menu).map((c) => (
+              {(searching ? results : catalog).map((c) => (
                 <li key={c.id} className="shrink-0">
                   <a
                     href={`#${c.id}`}
