@@ -144,6 +144,7 @@ function AdminPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -283,6 +284,38 @@ function AdminPage() {
     setLoginLoading(false);
 
     if (error) notify("Não foi possível entrar. Confira o e-mail e a senha.", true);
+  };
+
+  const handlePasswordRecovery = async () => {
+    if (!supabase) return;
+
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      notify("Informe seu e-mail para receber o link de recuperação.", true);
+      return;
+    }
+
+    setRecoveryLoading(true);
+    notify("");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      normalizedEmail,
+      {
+        redirectTo: `${window.location.origin}/admin`,
+      }
+    );
+
+    setRecoveryLoading(false);
+
+    if (error) {
+      notify("Não foi possível enviar o e-mail: " + error.message, true);
+      return;
+    }
+
+    notify(
+      "Se o e-mail estiver cadastrado, você receberá as instruções de recuperação."
+    );
   };
 
   const handlePasswordUpdate = async (event: FormEvent<HTMLFormElement>) => {
@@ -657,6 +690,16 @@ function AdminPage() {
                 placeholder="Sua senha"
               />
             </label>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => void handlePasswordRecovery()}
+                disabled={recoveryLoading}
+                className="text-sm font-semibold text-gold hover:underline disabled:opacity-50"
+              >
+                {recoveryLoading ? "Enviando..." : "Esqueci minha senha"}
+              </button>
+            </div>
             {message && <Notice text={message} isError={messageIsError} />}
             <button
               type="submit"
