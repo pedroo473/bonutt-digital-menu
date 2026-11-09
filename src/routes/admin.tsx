@@ -221,37 +221,52 @@ function AdminPage() {
   }, [session]);
 
   useEffect(() => {
-    if (!supabase || !isAdmin) return;
+    const client = supabase;
+    if (!client || !isAdmin) return;
 
     let mounted = true;
+
     const load = async () => {
       setDataLoading(true);
-      const [categoryResult, productResult] = await Promise.all([
-        supabase
-          .from("menu_categories")
-          .select("*")
-          .in("id", [...MANAGED_CATEGORY_IDS])
-          .order("sort_order"),
-        supabase
-          .from("menu_products")
-          .select("*")
-          .in("category_id", [...MANAGED_CATEGORY_IDS])
-          .order("sort_order"),
-      ]);
+      try {
+        const [categoryResult, productResult] = await Promise.all([
+          client
+            .from("menu_categories")
+            .select("*")
+            .in("id", [...MANAGED_CATEGORY_IDS])
+            .order("sort_order"),
+          client
+            .from("menu_products")
+            .select("*")
+            .in("category_id", [...MANAGED_CATEGORY_IDS])
+            .order("sort_order"),
+        ]);
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (categoryResult.error || productResult.error) {
-        setMessage("Erro ao carregar o painel. Verifique se o script SQL foi executado no Supabase.");
-        setMessageIsError(true);
-      } else {
-        setCategories((categoryResult.data ?? []) as CategoryRow[]);
-        setProducts((productResult.data ?? []) as ProductRow[]);
+        if (categoryResult.error || productResult.error) {
+          const error = categoryResult.error ?? productResult.error;
+          notify("Erro ao carregar o painel: " + error.message, true);
+        } else {
+          setCategories((categoryResult.data ?? []) as CategoryRow[]);
+          setProducts((productResult.data ?? []) as ProductRow[]);
+        }
+      } catch (error) {
+        if (mounted) {
+          notify(
+            error instanceof Error
+              ? "Falha de conexão com o Supabase: " + error.message
+              : "Falha inesperada ao carregar o painel.",
+            true,
+          );
+        }
+      } finally {
+        if (mounted) setDataLoading(false);
       }
-      setDataLoading(false);
     };
 
     void load();
+
     return () => {
       mounted = false;
     };
@@ -287,7 +302,12 @@ function AdminPage() {
   };
 
   const handlePasswordRecovery = async () => {
-    if (!supabase) return;
+    const client = supabase;
+
+    if (!client) {
+      notify("Supabase não configurado. Confira VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.", true);
+      return;
+    }
 
     const normalizedEmail = email.trim();
 
@@ -299,28 +319,40 @@ function AdminPage() {
     setRecoveryLoading(true);
     notify("");
 
-    const { error } = await supabase.auth.resetPasswordForEmail(
-      normalizedEmail,
-      {
-        redirectTo: `${window.location.origin}/admin`,
+    try {
+      const redirectTo = new URL("/admin", window.location.origin).toString();
+      const { error } = await client.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo,
+      });
+
+      if (error) {
+        notify("Não foi possível enviar o e-mail: " + error.message, true);
+        return;
       }
-    );
 
-    setRecoveryLoading(false);
-
-    if (error) {
-      notify("Não foi possível enviar o e-mail: " + error.message, true);
-      return;
+      notify("Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.");
+    } catch (error) {
+      notify(
+        error instanceof TypeError
+          ? "Falha de conexão com o Supabase. Verifique a URL, a chave pública, a conexão de internet e as configurações de rede."
+          : error instanceof Error
+            ? "Erro ao solicitar recuperação: " + error.message
+            : "Não foi possível concluir a solicitação de recuperação.",
+        true,
+      );
+    } finally {
+      setRecoveryLoading(false);
     }
-
-    notify(
-      "Se o e-mail estiver cadastrado, você receberá as instruções de recuperação."
-    );
   };
 
   const handlePasswordUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!supabase) return;
+    const client = supabase;
+
+    if (!client) {
+      notify("Supabase não configurado. Confira as variáveis de ambiente.", true);
+      return;
+    }
 
     if (newPassword.length < 8) {
       notify("A nova senha precisa ter pelo menos 8 caracteres.", true);
@@ -333,19 +365,30 @@ function AdminPage() {
     }
 
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setSaving(false);
 
-    if (error) {
-      notify("Não foi possível atualizar a senha: " + error.message, true);
-      return;
+    try {
+      const { error } = await client.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        notify("Não foi possível atualizar a senha: " + error.message, true);
+        return;
+      }
+
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordRecovery(false);
+      await client.auth.signOut();
+      notify("Senha atualizada. Entre com sua nova senha.");
+    } catch (error) {
+      notify(
+        error instanceof Error
+          ? "Falha ao atualizar a senha: " + error.message
+          : "Não foi possível atualizar a senha.",
+        true,
+      );
+    } finally {
+      setSaving(false);
     }
-
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordRecovery(false);
-    await supabase.auth.signOut();
-    notify("Senha atualizada. Entre com sua nova senha.");
   };
 
   const handleLogout = async () => {
