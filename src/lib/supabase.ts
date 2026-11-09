@@ -4,10 +4,15 @@ const env = import.meta.env as ImportMetaEnv & {
   VITE_SUPABASE_URL?: string;
   VITE_SUPABASE_PUBLISHABLE_KEY?: string;
   VITE_SUPABASE_ANON_KEY?: string;
+  VITE_SUPABASE_KEY?: string;
 };
 
 const url = env.VITE_SUPABASE_URL;
-const key = env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_ANON_KEY;
+// Prefer the current Publishable key name; keep older project env names as fallbacks.
+const key =
+  env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  env.VITE_SUPABASE_ANON_KEY ??
+  env.VITE_SUPABASE_KEY;
 
 export const isSupabaseConfigured = Boolean(url && key);
 
