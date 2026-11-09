@@ -94,3 +94,31 @@ Depois que as variáveis estiverem salvas, publique a versão da branch de desen
 - As categorias podem ter nome, observação e visibilidade alterados no painel.
 - Para criar uma nova categoria, é necessário também adicioná-la à lista de categorias gerenciadas em \`src/lib/catalog.ts\` e à estrutura visual em \`src/data/menu.ts\`.
 - O arquivo \`.env.local\` não deve ser enviado ao GitHub.
+
+
+## 6. Recuperação de senha (Reset password)
+
+O painel implementa o fluxo completo pelo Supabase Auth:
+
+- O botão **Esqueci minha senha** chama `resetPasswordForEmail`.
+- O link retorna para `/admin` e o cliente Supabase detecta a sessão de recuperação pela URL.
+- A tela de nova senha chama `updateUser({ password })`.
+- Após atualizar a senha, a sessão é encerrada e o usuário pode entrar com a nova senha.
+
+No Supabase, em **Authentication > URL Configuration**, configure:
+
+- **Site URL:** a origem do site, sem o caminho `/admin`. Exemplo local: `http://localhost:8080`.
+- **Redirect URLs:** adicione `http://localhost:8080/admin`.
+- Para produção, configure a origem real do site em **Site URL** e adicione `https://SEU-DOMINIO/admin` em **Redirect URLs**.
+
+O endereço de redirecionamento precisa corresponder exatamente ao domínio e caminho usados pelo painel. Não use curingas amplos.
+
+Em **Authentication > Emails > Reset password**, o modelo padrão do Supabase já pode ser usado; o link padrão deve manter a variável de confirmação do Supabase. A edição do assunto e do corpo exige SMTP personalizado.
+
+**Envio de e-mail:** o SMTP padrão do Supabase é limitado e destinado a testes. Para uso real, configure um provedor SMTP próprio em **Authentication > Emails > SMTP Settings**, valide o domínio remetente (SPF/DKIM) e faça um teste com um endereço externo autorizado. A configuração de SMTP é feita no Dashboard e não pode ser enviada pelo repositório.
+
+Se a solicitação apresentar `Failed to fetch`, confira:
+1. `VITE_SUPABASE_URL` corresponde ao Project URL do projeto correto.
+2. A chave frontend é a Publishable key (ou anon key antiga), nunca `service_role` ou secret.
+3. O navegador consegue acessar o endpoint do projeto e não há bloqueio de rede/extensão.
+4. As variáveis locais e do provedor de hospedagem foram atualizadas e o servidor/build foi reiniciado após a alteração.
