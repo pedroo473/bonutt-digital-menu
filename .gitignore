@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local environment variables
+.env
+.env.*
+!.env.example
+
+# Netlify - arquivos locais gerados
+.netlify/
