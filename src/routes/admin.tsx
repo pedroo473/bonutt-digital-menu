@@ -241,12 +241,16 @@ function AdminPage() {
             .in("category_id", [...MANAGED_CATEGORY_IDS])
             .order("sort_order"),
         ]);
-
+        
         if (!mounted) return;
 
         if (categoryResult.error || productResult.error) {
-          const error = categoryResult.error ?? productResult.error;
-          notify("Erro ao carregar o painel: " + error.message, true);
+          const errorMessage =
+            categoryResult.error?.message ??
+            productResult.error?.message ??
+            "Erro desconhecido ao carregar os dados.";
+
+          notify("Erro ao carregar o painel: " + errorMessage, true);
         } else {
           setCategories((categoryResult.data ?? []) as CategoryRow[]);
           setProducts((productResult.data ?? []) as ProductRow[]);
